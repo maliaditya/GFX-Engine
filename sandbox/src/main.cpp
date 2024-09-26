@@ -8,7 +8,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 
     // Main loop
-    while (myWindow.IsOpen()) {
+    while (myWindow.isOpen()) {
         // You could add any additional update logic here if needed
     }
 
