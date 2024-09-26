@@ -4,3 +4,17 @@
 *.user
 *.userosscache
 *.sln.docstates
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
+
+
+# Engine files
+**.log
+**.obj
+**.exe

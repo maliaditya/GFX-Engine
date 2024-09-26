@@ -1,17 +1,16 @@
-
-// Experience.h
+// experience.h
 #pragma once
-#include "EventEmitter.h"
+
+#include "utils/Logger.h"  // Include path for the Logger class
 
 class Experience {
 public:
-    Experience(EventEmitter& eventEmitter);
-    ~Experience() = default;
+    Logger log;  // Logger instance for logging messages
 
-    void Update();
-    void Render();
+    // Constructor that initializes the logger with a log file name
+    Experience();
 
-private:
-    EventEmitter& eventEmitter;
+    // Method declarations for updating and rendering
+    void update();
+    void render();
 };
-

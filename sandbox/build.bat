@@ -26,13 +26,13 @@ set OBJ_DIR=build\obj
 set EXE_DIR=build
 
 :: Compile source files
-cl.exe /c /EHsc /I %ENGINE_DIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %WINDOWDIR%\window.cpp /Fo%OBJ_DIR%\
+cl.exe /c /EHsc /I %ENGINE_DIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %SRC_DIR%\Experience\Experience.cpp %WINDOWDIR%\window.cpp   /Fo%OBJ_DIR%\
 
 :: Create resource file
 rc.exe %WINDOWDIR%\Window.rc
 
 :: Link object files and create executable
-link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%WINDOWDIR%\glew\lib\Release\x64" user32.lib gdi32.lib /subsystem:windows /OUT:%EXE_DIR%\main.exe
+link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%WINDOWDIR%\glew\lib\Release\x64" user32.lib gdi32.lib /subsystem:windows  /OUT:%EXE_DIR%\main.exe
 
 :: Clean up
 if exist main.exe (
