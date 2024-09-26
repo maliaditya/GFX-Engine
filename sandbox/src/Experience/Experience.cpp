@@ -2,18 +2,18 @@
 #include "Experience.h"
 #include <iostream>
 
-Experience::Experience(EventEmitter& eventEmitter) : eventEmitter(eventEmitter) {
-    // Register event listeners
-    eventEmitter.on("update", [this]() { Update(); });
-    eventEmitter.on("render", [this]() { Render(); });
+Experience::Experience():log("experience.log")
+{
+
 }
 
-void Experience::Update() {
+void Experience::update() {
     // Update 3D world logic
-    std::cout << "Updating the 3D world...\n";
+    log.write("Updating the 3D world...\n");
 }
 
-void Experience::Render() {
+
+void Experience::render() {
     // Render 3D world
-    std::cout << "Rendering the 3D world...\n";
+    log.write("Rendering the 3D world...\n");
 }

@@ -2,17 +2,17 @@
 
 namespace Engine {
 
-	Window::Window(HINSTANCE hInstance, int iCmdShow, const char* title) {
+	Window::Window(HINSTANCE hInstance, int iCmdShow, const char* title) : log("window.log") {
 		// Copy title to szAppName
 		strncpy(szAppName, title, sizeof(szAppName) - 1);
 		szAppName[sizeof(szAppName) - 1] = '\0'; // Ensure null-termination
 
 		initialize(hInstance);
 		show();
-		update();
 	}
 
 	Window::~Window() {
+        cleanup();
 		// Clean up resources if needed
 	}
     int Window::initialize(HINSTANCE hInstance) {
@@ -37,15 +37,23 @@ namespace Engine {
             return -1; // Registration failed
         }
 
+        // Get size of Work Area of the window 
+        SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, 0);
+
+
+        // Calculate the center position
+        int x = rc.left + (rc.right - rc.left - WINWIDTH) / 2;
+        int y = rc.top + (rc.bottom - rc.top - WINHEIGHT) / 2;
+
         // Create the window
         hwnd = CreateWindow(
             windowClassName, // Class name
             szAppName, // Title
             WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
+            x,
+            y,
+            WINWIDTH,
+            WINHEIGHT,
             NULL,
             NULL,
             hInstance,
@@ -72,12 +80,26 @@ namespace Engine {
 		UpdateWindow(hwnd);
 	}
 
-	void Window::update() {
+	void Window::gameLoop() {
+      
 		// Message loop
-		while (GetMessage(&msg, NULL, 0, 0)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+        while (!bDone) {
+            while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                if (msg.message == WM_QUIT) {
+                    bDone = true;
+
+                }
+                else {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
+            }
+
+            if (bActiveWindow) {
+                eventEmitter.trigger("update"); // Trigger the update event
+                eventEmitter.trigger("render"); // Trigger the render event
+            }
+        }
 	}
 
     void Window::toggleFullscreen()
@@ -122,17 +144,61 @@ namespace Engine {
 		return msg.message != WM_QUIT; // Check if the message is WM_QUIT
 	}
 
+
+    void Window::cleanup() {
+        if (hwnd) {
+            DestroyWindow(hwnd); // Destroy the window if it's created
+            hwnd = nullptr; // Nullify the handle to avoid dangling pointer
+        }
+        // Add any other cleanup logic if needed, such as releasing resources
+    }
+
     LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
         Window* window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
+        if (!window) {
+            return DefWindowProc(hwnd, iMsg, wParam, lParam);
+        }
+
         switch (iMsg) {
-        case WM_KEYDOWN:
-            switch (wParam) {
+
+        case WM_SETFOCUS:
+            window->log.write("WM_SETFOCUS");
+            window->log.debug("window->WM_SETFOCUS", window->bActiveWindow);
+            window->bActiveWindow = TRUE;
+            break;
+        case WM_KILLFOCUS:
+            window->log.write("WM_KILLFOCUS");
+            window->log.debug("window->WM_KILLFOCUS", window->bActiveWindow);
+            window->bActiveWindow = FALSE;
+            break;
+
+        case WM_ERASEBKGND:
+            break;
+
+        case WM_CHAR:
+            switch (wParam)
+            {
             case 'F':
             case 'f':
                 if (window) {
                     window->toggleFullscreen();
                 }
+                break;
+
+            default:
+                break;
+            }
+            break;
+
+        case WM_KEYDOWN:
+            switch (wParam)
+            {
+            case 27:
+                DestroyWindow(hwnd);
+                break;
+
+            default:
                 break;
             }
             break;
