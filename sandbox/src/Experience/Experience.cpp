@@ -13,7 +13,7 @@ void Experience::update() {
 }
 
 
-void Experience::render() {
+void Experience::render(HDC hdc) {
     // Render 3D world
     log.write("Rendering the 3D world...\n");
 }

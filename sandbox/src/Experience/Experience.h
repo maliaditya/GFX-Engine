@@ -1,6 +1,8 @@
 // experience.h
 #pragma once
 
+#include "OpenGLContext.h"
+
 #include "utils/Logger.h"  // Include path for the Logger class
 
 class Experience {
@@ -12,5 +14,5 @@ public:
 
     // Method declarations for updating and rendering
     void update();
-    void render();
+    void render(HDC hdc);
 };

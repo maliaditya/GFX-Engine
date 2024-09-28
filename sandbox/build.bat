@@ -22,22 +22,34 @@ set VENDOR_LIBS=..\engine\vendor
 set ENGINE_DIR=..\engine
 set SRC_DIR=.\src
 set WINDOWDIR= ..\engine\platform\windows
+set OPENGLDIR= ..\engine\platform\opengl
 set OBJ_DIR=build\obj
 set EXE_DIR=build
 
 :: Compile source files
-cl.exe /c /EHsc /I %ENGINE_DIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %SRC_DIR%\Experience\Experience.cpp %WINDOWDIR%\window.cpp   /Fo%OBJ_DIR%\
+cl.exe /c /EHsc /I %ENGINE_DIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include\ ^
+%SRC_DIR%\main.cpp ^
+%SRC_DIR%\Experience\Experience.cpp ^
+%OPENGLDIR%\OpenGLContext.cpp ^
+%WINDOWDIR%\window.cpp  ^
+/Fo%OBJ_DIR%\
 
 :: Create resource file
 rc.exe %WINDOWDIR%\Window.rc
 
 :: Link object files and create executable
-link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%WINDOWDIR%\glew\lib\Release\x64" user32.lib gdi32.lib /subsystem:windows  /OUT:%EXE_DIR%\main.exe
+link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%VENDOR_LIBS%\glew\lib\Release\x64" user32.lib gdi32.lib /subsystem:windows  /OUT:%EXE_DIR%\main.exe
 
 :: Clean up
 if exist main.exe (
     del %OBJ_DIR%\*.obj
     del %WINDOWDIR%\*.res
+)
+
+if exist %EXE_DIR%\main.exe (
+    echo Executable created successfully at %EXE_DIR%\main.exe!
+) else (
+    echo Executable creation failed.
 )
 
 echo Build completed successfully!
