@@ -28,6 +28,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     void resize(int, int);
     void update();
     void render();
+    void uninitialize();
 
     // Create the Experience object
     //Experience exp;
@@ -35,6 +36,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     // Register Experience callbacks to the Window's EventEmitter
     myWindow.eventEmitter.on("update", [&]() { update(); });
     myWindow.eventEmitter.on("render", [&]() { render(); });
+    myWindow.eventEmitter.on("uninitialize", [&]() { uninitialize(); });
     myWindow.eventEmitter.on("resize", [&]() { resize(myWindow.width, myWindow.height); });
     
     initialize();
@@ -50,21 +52,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 int initialize() 
 {
-    Logger log("Initialize.log");
   
     // Depth related Changes
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    // Optional
-    // glShadeModel(GL_SMOOTH)
-    // glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
     // Clear the screen using blue color
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-
-    log.write("initialize");
 
     return(0);
 }
@@ -96,5 +91,10 @@ void update()
     // Code
 
     Logger log("update.log");
+
+}
+
+void uninitialize()
+{
 
 }
