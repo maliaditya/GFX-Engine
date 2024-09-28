@@ -11,6 +11,11 @@ namespace Engine {
 		show();
 	}
 
+    void Window::resize()
+    {
+        eventEmitter.trigger("resize"); // Trigger the update event
+    }
+
 	Window::~Window() {
         cleanup();
 		// Clean up resources if needed
@@ -201,6 +206,12 @@ namespace Engine {
             default:
                 break;
             }
+            break;
+
+        case WM_SIZE:
+            window->width = LOWORD(lParam);
+            window->height = HIWORD(lParam);
+            window->resize();
             break;
 
         case WM_DESTROY:
