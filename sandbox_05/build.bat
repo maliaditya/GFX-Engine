@@ -27,7 +27,7 @@ set OBJ_DIR=build\obj
 set EXE_DIR=build
 
 :: Compile source files
-cl.exe /c /EHsc /I %ENGINE_DIR% /I %OPENGLDIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp   %OPENGLDIR%\shader.cpp   %SRC_DIR%\Experience\World\objects\Triangle.cpp   %WINDOWDIR%\window.cpp   /Fo%OBJ_DIR%\
+cl.exe /c /EHsc /I %ENGINE_DIR% /I %OPENGLDIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %VENDOR_LIBS%\imgui\*.cpp  %OPENGLDIR%\shader.cpp   %SRC_DIR%\Experience\World\objects\Triangle.cpp  %WINDOWDIR%\window.cpp   /Fo%OBJ_DIR%\
 
 :: Create resource file
 rc.exe %WINDOWDIR%\Window.rc

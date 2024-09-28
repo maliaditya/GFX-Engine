@@ -1,2 +1,2 @@
-#include "Window.h"
+#include "resource.h"
 MYICON ICON aditya.ico

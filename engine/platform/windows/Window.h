@@ -1,11 +1,30 @@
 #pragma once
 #include <windows.h>
-#include "../../utils/Logger.h"
-#include "../../utils/EventEmitter.h"
+
+// ImGUI Headers
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_impl_opengl3.h"
+#include "Imgui/imgui_impl_win32.h"
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include "utils/Logger.h"
+#include "utils/EventEmitter.h"
+#include <GL/glew.h> // This Must Be Before Including <GL/gl.h>
+#include <GL/gl.h>
+
+// OpenGL  libraries
+#pragma comment(lib,"GLEW32.lib")
+#pragma comment(lib,"OpenGL32.lib")
 
 #define MYICON  101
 #define WINWIDTH  800
 #define WINHEIGHT  600
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWhwnnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 namespace Engine {
 		
@@ -15,6 +34,9 @@ namespace Engine {
 		Logger log;
 		EventEmitter eventEmitter;  // EventEmitter to manage events
 		HWND hwnd;
+		HDC hdc;
+		HGLRC hrc;
+		BOOL setDefaultContext = TRUE;
 
 		Window (HINSTANCE hInstance, int iCmdShow, const char* title);
 		~Window();
@@ -23,8 +45,11 @@ namespace Engine {
 		void gameLoop();
 		bool isOpen() const;
 		void toggleFullscreen();
+		void uninitialize(); // Cleanup method
+
 		int width = WINWIDTH;
 		int height = WINHEIGHT;
+
 
 	private:
 		// variable declaration
@@ -39,7 +64,7 @@ namespace Engine {
 
 
 		int initialize(HINSTANCE hInstance);
-		void cleanup(); // Cleanup method
+		int setContext();
 		void resize();
 
 		static LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);

@@ -8,7 +8,7 @@
 //#pragma comment(lib,"GLEW32.lib")
 //#pragma comment(lib,"OpenGL32.lib")
 #include "shader.h"
-#include "triangle_mesh.h"
+#include "Experience/World/objects/Triangle.h"
 
 #include "../../engine/utils/Logger.h"
 

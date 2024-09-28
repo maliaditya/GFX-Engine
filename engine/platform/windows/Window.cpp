@@ -2,14 +2,69 @@
 
 namespace Engine {
 
+
+
 	Window::Window(HINSTANCE hInstance, int iCmdShow, const char* title) : log("window.log") {
 		// Copy title to szAppName
 		strncpy(szAppName, title, sizeof(szAppName) - 1);
 		szAppName[sizeof(szAppName) - 1] = '\0'; // Ensure null-termination
 
 		initialize(hInstance);
-		show();
+
+        setDefaultContext ? setContext() : (void)0;
+		
+        show();
 	}
+
+    int Window::setContext() {
+
+        // Variable declarations
+        PIXELFORMATDESCRIPTOR pfd;
+        int iPixelFormatIndex = 0;
+
+        //code
+        //  Initialization of pixel format descriptor
+        ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
+
+        pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+        pfd.nVersion = 1;
+        pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        pfd.iPixelType = PFD_TYPE_RGBA;
+        pfd.cColorBits = 32;
+        pfd.cRedBits = 8;
+        pfd.cGreenBits = 8;
+        pfd.cBlueBits = 8;
+        pfd.cAlphaBits = 8;
+        pfd.cDepthBits = 32;
+
+        hdc = GetDC(hwnd);
+
+        // Choose pixel format descriptor
+        iPixelFormatIndex = ChoosePixelFormat(hdc, &pfd);
+        if (iPixelFormatIndex == 0)
+            return(-1);
+
+        // Set the chosen pixel format
+        if (SetPixelFormat(hdc, iPixelFormatIndex, &pfd) == FALSE)
+            return(-2);
+
+        // Create OpenGL rendering context
+        hrc = wglCreateContext(hdc);
+        if (hrc == NULL)
+            return(-3);
+
+        // Make rendering context as the current context
+        if (wglMakeCurrent(hdc, hrc) == FALSE)
+            return(-4);
+
+        // GLEW Initialization
+        if (glewInit() != GLEW_OK)
+        {
+            return(-5);
+        }
+      
+        return(0);
+    }
 
     void Window::resize()
     {
@@ -17,7 +72,7 @@ namespace Engine {
     }
 
 	Window::~Window() {
-        cleanup();
+        uninitialize();
 		// Clean up resources if needed
 	}
     int Window::initialize(HINSTANCE hInstance) {
@@ -27,7 +82,7 @@ namespace Engine {
         wndclass.cbWndExtra = 0;
         wndclass.lpfnWndProc = WndProc;
         wndclass.hInstance = hInstance;
-        wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+        wndclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
         wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
         wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 
@@ -150,15 +205,41 @@ namespace Engine {
 	}
 
 
-    void Window::cleanup() {
+    void Window::uninitialize() {
+        
+        eventEmitter.trigger("uninitialize");
+
+        if (wglGetCurrentContext() == hrc)
+        {
+            wglMakeCurrent(NULL, NULL);
+        }
+
+        if (hrc)
+        {
+            wglDeleteContext(hrc);
+            hrc = NULL;
+        }
+
+        if (hdc)
+        {
+            ReleaseDC(hwnd, hdc);
+            hdc = NULL;
+        }
+
         if (hwnd) {
             DestroyWindow(hwnd); // Destroy the window if it's created
             hwnd = nullptr; // Nullify the handle to avoid dangling pointer
         }
+
         // Add any other cleanup logic if needed, such as releasing resources
     }
 
+
+
     LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+
+        ImGui_ImplWin32_WndProcHandler(hwnd, iMsg, wParam, lParam);
+
         Window* window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
         if (!window) {
@@ -215,6 +296,7 @@ namespace Engine {
             break;
 
         case WM_DESTROY:
+            window->uninitialize();
             PostQuitMessage(0);
             return 0;
 
