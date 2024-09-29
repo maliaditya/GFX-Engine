@@ -27,7 +27,9 @@
 HDC ghdc;
 GLuint shaderProgramObject;
 
-GLuint mvpMatrixUniform;
+GLuint modelMatrixUniform;
+GLuint viewMatrixUniform;
+GLuint projectionMatrixUniform;
 glm::mat4 perspectiveProjectionMatrix;
 
 
@@ -35,7 +37,7 @@ glm::mat4 perspectiveProjectionMatrix;
 
 //HGLRC ghrc;
 HWND ghwnd;
-
+Camera* camera;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow) {
     // Create the window
     Engine::Window myWindow(hInstance, iCmdShow, "Aditya Shivaji Mali");
@@ -43,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     ghwnd = myWindow.hwnd;
     //ghrc = myWindow.hrc;
     ghdc = myWindow.hdc;
-
+    camera = &myWindow.camera;
     Logger log("Main.log");
 
     int initialize();
@@ -94,6 +96,12 @@ int initialize()
 	shaderProgramObject = shader.getShaderProgram("triangle");
 	triangle.init();
 
+    // Posted Linked Retrieving /Getting uniform location  from the shader program object.
+    modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_modelMatrix");
+    viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_viewMatrix");
+    projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_projectionMatrix");
+
+
     // Depth related Changes
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -122,6 +130,7 @@ void resize(int width, int height)
 }
 
 ImVec2 availableSpaceProperties;
+
 
 void render()
 {
@@ -160,16 +169,16 @@ void render()
 
 	// Use The Shader Program Object
 	glUseProgram(shaderProgramObject);
+    // Transformations
+    glm::mat4 modelMatrix = glm::mat4(1.0);
+    glm::mat4 viewMatrix = camera->getMatrix();
+    glm::mat4 translationMatrix = glm::mat4(1.0);
+    
+    modelMatrix = translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
 
-	// Transformations
-	glm::mat4 translationMatrix = glm::mat4(1.0);
-	glm::mat4 modelViewMatrix = glm::mat4(1.0);
-	glm::mat4 modelViewProjectionMatrix = glm::mat4(1.0);
-
-    modelViewMatrix = translate(modelViewMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
-    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
-
-    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
 	triangle.render();
 
