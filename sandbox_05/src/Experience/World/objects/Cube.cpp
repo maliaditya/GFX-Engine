@@ -1,6 +1,6 @@
-#include "Triangle.h"
+#include "Cube.h"
 
-const GLfloat TriangleMesh::trianglPosition[] = {
+const GLfloat Cube::cubePosition[] = {
 	// Front face
 	-0.5f, -0.5f,  0.5f,
 	 0.5f, -0.5f,  0.5f,
@@ -38,7 +38,7 @@ const GLfloat TriangleMesh::trianglPosition[] = {
 	 -0.5f, -0.5f,  0.5f
 };
 
-const GLfloat TriangleMesh::trianglColor[] = {
+const GLfloat Cube::cubeColor[] = {
 	// Front face (Red)
 	1.0f, 0.0f, 0.0f,
 	1.0f, 0.0f, 0.0f,
@@ -76,7 +76,9 @@ const GLfloat TriangleMesh::trianglColor[] = {
 	1.0f, 0.0f, 1.0f
 };
 
-const GLuint TriangleMesh::indices[] = {
+const GLuint Cube::indices[] = {
+	// Front face
+	0, 1, 2, 2, 3, 0,
 	// Back face
 	4, 5, 6, 6, 7, 4,
 	// Left face
@@ -89,11 +91,11 @@ const GLuint TriangleMesh::indices[] = {
 	20, 21, 22, 22, 23, 20
 };
 
-TriangleMesh::TriangleMesh() :
+Cube::Cube() :
 	localShaderPaths(
 		{
-			{GL_VERTEX_SHADER, "src/shader/plane/plane.vert"},
-			{GL_FRAGMENT_SHADER, "src/shader/plane/plane.frag"}
+			{GL_VERTEX_SHADER, "src/shader/triangle/triangle.vert"},
+			{GL_FRAGMENT_SHADER,"src/shader/triangle/triangle.frag"}
 
 		}
 	) {
@@ -101,22 +103,23 @@ TriangleMesh::TriangleMesh() :
 //D:\Aadis GFX LAB\GFX - Engine\sandbox_04/src/shader/triangle/triangleFragment.glsl
 }
 
-TriangleMesh::~TriangleMesh()
+Cube::~Cube()
 {
 	uninitializer(); // Ensure resources are cleaned up
 }
 
 
 
-void TriangleMesh::init() {
-	
+
+void Cube::init() {
+
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
 	//Bind with vertex array object and start recording buffer and buffer data related steps.
 	glGenBuffers(1, &VBO_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_POSITION);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglPosition), trianglPosition, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubePosition), cubePosition, GL_STATIC_DRAW);
 	glVertexAttribPointer(ASM_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
 	glEnableVertexAttribArray(ASM_ATTRIBUTE_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -124,7 +127,7 @@ void TriangleMesh::init() {
 	// VBO for Color
 	glGenBuffers(1, &VBO_COLOR);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_COLOR);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(trianglColor), trianglColor, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeColor), cubeColor, GL_STATIC_DRAW);
 	glVertexAttribPointer(ASM_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
 	glEnableVertexAttribArray(ASM_ATTRIBUTE_COLOR);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -138,32 +141,32 @@ void TriangleMesh::init() {
 }
 
 
-void TriangleMesh::bindAttributeLocationsAndLink(GLuint shaderProgramObject) {
+void Cube::bindAttributeLocationsAndLink(GLuint shaderProgramObject) {
 	glBindAttribLocation(shaderProgramObject, ASM_ATTRIBUTE_POSITION, "a_position");
 	glBindAttribLocation(shaderProgramObject, ASM_ATTRIBUTE_COLOR, "a_color");
 	glLinkProgram(shaderProgramObject);
 }
 
 
-void TriangleMesh::render() 
+void Cube::render()
 {
 	//code
 	//Bind with vertex array object
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glDrawElements(GL_TRIANGLES, sizeof(indices)*sizeof(indices[0]), GL_UNSIGNED_INT, 0); // Use this with index buffer
+	//glDrawElements(GL_TRIANGLES, sizeof(indices)*sizeof(indices[0]), GL_UNSIGNED_INT, 0); // Use this with index buffer
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 }
 
-void TriangleMesh::uninitializer() {
+void Cube::uninitializer() {
 
 	if (VBO_POSITION) {
 		glDeleteBuffers(1, &VBO_POSITION);
 		VBO_POSITION = 0;
-	}   
+	}
 	if (VBO_COLOR) {
 		glDeleteBuffers(1, &VBO_COLOR);
 		VBO_COLOR = 0;

@@ -20,9 +20,10 @@
 #include "utils/Logger.h"
 
 // My header files
-#include "Experience/World/objects/Triangle.h"
+#include "Experience/World/objects/plane.h"
 
 // ************** OpenGL Headers already defined in Window.h *******************
+
 
 HDC ghdc;
 GLuint shaderProgramObject;
@@ -82,7 +83,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 // Forward declare message handler from imgui_impl_win32.cpp
 //extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWhwnnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-TriangleMesh triangle;
+Plane plane(10,10,1024, 1024);
 
 int initialize() 
 {
@@ -92,9 +93,9 @@ int initialize()
 	Logger iniLog("initialize.log");
 	Shader shader;
 	
-	shader.initialize(&triangle, triangle.localShaderPaths);
-	shaderProgramObject = shader.getShaderProgram("triangle");
-	triangle.init();
+	shader.initialize(&plane, plane.localShaderPaths);
+	shaderProgramObject = shader.getShaderProgram("plane");
+    plane.init();
 
     // Posted Linked Retrieving /Getting uniform location  from the shader program object.
     modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_modelMatrix");
@@ -153,6 +154,37 @@ void render()
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Separator();
 
+    // Create a slider to adjust the bigWavesElevation
+    ImGui::SliderFloat("BigWavesElevation", &plane.bigWavesElevation, 0.0f, 1.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("BigWavesFrequencyX", &plane.bigWavesFrequency.x, 0.0f, 10.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("BigWavesFrequencyZ", &plane.bigWavesFrequency.y, 0.0f, 10.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("BigWavesSpeed", &plane.bigWavesSpeed, 0.0f, 4.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("colorOffset", &plane.colorOffset, 0.0f, 4.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("colorMultiplier", &plane.colorMultiplier, 0.0f, 4.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("smallWavesElevation", &plane.smallWavesElevation, 0.0f, 1.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("smallWavesFrequency", &plane.smallWavesFrequency, 0.0f, 30.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("smallWavesSpeed", &plane.smallWavesSpeed, 0.0f, 4.0f, "%.3f"); // Adjust the range as needed
+    ImGui::SliderFloat("smallWavesIterations", &plane.smallWavesIterations, 0.0f, 5.0f, "%1.0f"); // Adjust the range as needed
+
+    // colors
+  // Normalize the colors by dividing by 255.0f
+    ImVec4 depthColor = ImVec4(72 / 255.0f, 61 / 255.0f, 139 / 255.0f, 1.0f);  // #186691
+    ImVec4 surfaceColor = ImVec4(135 / 255.0f, 206 / 255.0f, 235 / 255.0f, 1.0f);  // #9BD8FF
+
+    // Check if the user changes the colors using the color picker
+    if (ImGui::ColorEdit3("depthColor", (float*)&depthColor)) {
+        // Update the plane's depth color only if changed
+        plane.depthColor.x = depthColor.x;
+        plane.depthColor.y = depthColor.y;
+        plane.depthColor.z = depthColor.z;
+    }
+
+    if (ImGui::ColorEdit3("surfaceColor", (float*)&surfaceColor)) {
+        // Update the plane's surface color only if changed
+        plane.surfaceColor.x = surfaceColor.x;
+        plane.surfaceColor.y = surfaceColor.y;
+        plane.surfaceColor.z = surfaceColor.z;
+    }
     ImGui::End();
 
 
@@ -166,6 +198,7 @@ void render()
     //glViewport(availableSpaceProperties.x, 0, availableSpace.x, availableSpace.y);
 
     resize( availableSpace.x, availableSpace.y);
+    GLfloat angle = 45;
 
 	// Use The Shader Program Object
 	glUseProgram(shaderProgramObject);
@@ -173,14 +206,15 @@ void render()
     glm::mat4 modelMatrix = glm::mat4(1.0);
     glm::mat4 viewMatrix = camera->getMatrix();
     glm::mat4 translationMatrix = glm::mat4(1.0);
-    
-    modelMatrix = translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 
     glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
-	triangle.render();
+    plane.render();
 
 	// unuser the shader program object
 	glUseProgram(0);
@@ -200,8 +234,10 @@ void render()
 void update()
 {
     // Code
-
     Logger log("update.log");
+    plane.update();
+  
+
 }
 
 void uninitialize()
