@@ -8,7 +8,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
+#include "camera.h"
 #include "utils/Logger.h"
 #include "utils/EventEmitter.h"
 #include <GL/glew.h> // This Must Be Before Including <GL/gl.h>
@@ -37,6 +37,7 @@ namespace Engine {
 		HDC hdc;
 		HGLRC hrc;
 		BOOL setDefaultContext = TRUE;
+		Camera camera;
 
 		Window (HINSTANCE hInstance, int iCmdShow, const char* title);
 		~Window();

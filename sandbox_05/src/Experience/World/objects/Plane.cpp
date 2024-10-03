@@ -1,34 +1,5 @@
 #include "Plane.h"
 #include <chrono>
-/*
-const GLfloat Plane::planePositions[] = {
-	
-	// Front face (a simple 2D square)
-
-	-0.5f, -0.5f,  0.0f,
-	 0.5f, -0.5f,  0.0f,
-	 0.5f,  0.5f,  0.0f,
-	-0.5f,  0.5f,  0.0f,
-};
-
-const GLfloat Plane::planeColors[] = {
-	
-	// Colors for each vertex
-
-	1.0f, 0.0f, 0.0f,  // Red
-	0.0f, 1.0f, 0.0f,  // Green
-	0.0f, 0.0f, 1.0f,  // Blue
-	1.0f, 1.0f, 0.0f,  // Yellow
-};
-
-const GLuint Plane::planeIndices[] = {
-	
-	// Indices for the two triangles forming the plane
-
-	0, 1, 2,
-	2, 3, 0,
-};
-*/
 
 
 Plane::Plane(unsigned int width, unsigned int height, unsigned int gridX, unsigned int gridZ) :
@@ -51,6 +22,12 @@ Plane::Plane(unsigned int width, unsigned int height, unsigned int gridX, unsign
 {
 	// Code
 
+}
+
+Plane::~Plane()
+{
+	// Code
+	uninitializer();
 }
 
 void Plane::generatePlane()
@@ -144,10 +121,6 @@ void Plane::generateBuffers()
 	glBindVertexArray(0);
 };
 
-Plane::~Plane()
-{
-	// Code
-}
 
 void Plane::init()
 {
@@ -212,6 +185,42 @@ void Plane::render()
 
 }
 
+void Plane::renderGUI()
+{
+	// ImGui Frame preparation
+	ImGui::SetNextWindowBgAlpha(0.35f);
+	ImGui::DockSpaceOverViewport();
+
+	// Other ImGui elements
+	ImGui::Begin("Properties");
+
+	// Add sliders for controlling Plane attributes
+	ImGui::SliderFloat("BigWavesElevation", &bigWavesElevation, 0.0f, 1.0f, "%.3f");
+	ImGui::SliderFloat("BigWavesFrequencyX", &bigWavesFrequency.x, 0.0f, 10.0f, "%.3f");
+	ImGui::SliderFloat("BigWavesFrequencyZ", &bigWavesFrequency.y, 0.0f, 10.0f, "%.3f");
+	ImGui::SliderFloat("BigWavesSpeed", &bigWavesSpeed, 0.0f, 4.0f, "%.3f");
+	ImGui::SliderFloat("colorOffset", &colorOffset, 0.0f, 4.0f, "%.3f");
+	ImGui::SliderFloat("colorMultiplier", &colorMultiplier, 0.0f, 4.0f, "%.3f");
+	ImGui::SliderFloat("smallWavesElevation", &smallWavesElevation, 0.0f, 1.0f, "%.3f");
+	ImGui::SliderFloat("smallWavesFrequency", &smallWavesFrequency, 0.0f, 30.0f, "%.3f");
+	ImGui::SliderFloat("smallWavesSpeed", &smallWavesSpeed, 0.0f, 4.0f, "%.3f");
+	ImGui::SliderFloat("smallWavesIterations", &smallWavesIterations, 0.0f, 5.0f, "%1.0f");
+
+	// Colors (use class members for persistent values)
+	ImVec4 depthColorEdit = ImVec4(depthColor.r, depthColor.g, depthColor.b, 1.0f);
+	ImVec4 surfaceColorEdit = ImVec4(surfaceColor.r, surfaceColor.g, surfaceColor.b, 1.0f);
+
+	// Update colors when ImGui sliders are changed
+	if (ImGui::ColorEdit3("depthColor", (float*)&depthColorEdit)) {
+		depthColor = glm::vec3(depthColorEdit.x, depthColorEdit.y, depthColorEdit.z);  // Update class member
+	}
+
+	if (ImGui::ColorEdit3("surfaceColor", (float*)&surfaceColorEdit)) {
+		surfaceColor = glm::vec3(surfaceColorEdit.x, surfaceColorEdit.y, surfaceColorEdit.z);  // Update class member
+	}
+
+	ImGui::End();
+}
 void Plane::update()
 {
 	Logger log("UpdatePlane.log");

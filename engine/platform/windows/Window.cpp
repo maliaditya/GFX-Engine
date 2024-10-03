@@ -239,7 +239,6 @@ namespace Engine {
     LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
         ImGui_ImplWin32_WndProcHandler(hwnd, iMsg, wParam, lParam);
-
         Window* window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
         if (!window) {
@@ -277,7 +276,15 @@ namespace Engine {
             }
             break;
 
+       
+        case WM_SIZE:
+            window->width = LOWORD(lParam);
+            window->height = HIWORD(lParam);
+            window->resize();
+            break;
+
         case WM_KEYDOWN:
+            window->camera.update(hwnd, iMsg, wParam, lParam);
             switch (wParam)
             {
             case 27:
@@ -289,16 +296,24 @@ namespace Engine {
             }
             break;
 
-        case WM_SIZE:
-            window->width = LOWORD(lParam);
-            window->height = HIWORD(lParam);
-            window->resize();
-            break;
 
+        case WM_MOUSEMOVE:
+            if (wParam & MK_SHIFT) {
+                window->camera.update(hwnd, iMsg, wParam, lParam);
+            }
+            break;
+        case WM_MOUSEWHEEL:
+            if (wParam & MK_SHIFT) {
+                window->camera.update(hwnd, iMsg, wParam, lParam);
+                window->width = LOWORD(lParam);
+                window->height = HIWORD(lParam);
+                window->resize();
+            }
+            break;
         case WM_DESTROY:
             window->uninitialize();
             PostQuitMessage(0);
-            return 0;
+            break;
 
         default:
             break;

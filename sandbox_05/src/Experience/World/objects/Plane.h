@@ -6,18 +6,21 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "utils/Logger.h"
 #include "../../../utils/Time.h"
+#include "ImguiManager.h"
 
 class Plane : public Mesh
 {
 public:
+	
 	Plane(unsigned int width = 1, unsigned int height = 1, unsigned int gridX = 1, unsigned int gridZ = 1 );
-	~Plane();
+   ~Plane();
 	
 	std::unordered_map<GLenum,const char*> localShaderPaths;
 
 	void init() override;
 	void bindAttributeLocationsAndLink(GLuint) override;
 	void render() override;
+	void renderGUI();
 	void uninitializer();
 	void update();
 	

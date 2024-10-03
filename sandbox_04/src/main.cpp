@@ -24,7 +24,7 @@ GLuint VBO_COLOR;
 GLuint mvpMatrixUniform;
 mat4 perspectiveProjectionMatrix;
 
-
+Camera camera;
 //HGLRC ghrc;
 //HWND ghwnd;
 
@@ -35,7 +35,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     //ghwnd = myWindow.hwnd;
     //ghrc = myWindow.hrc;
     ghdc = myWindow.hdc;
-
+    camera = myWindow.camera;
     Logger log("Main.log");
 
     int initialize();
@@ -101,7 +101,8 @@ void resize(int width, int height)
         height = 1;
 
     glViewport(0, 0, width, height);
-	perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+
+    perspectiveProjectionMatrix = perspective(glm::radians(camera.fov), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 }
 
 void render()
@@ -116,13 +117,13 @@ void render()
 
 
 	// Transformations
-	mat4 translationMatrix = mat4::identity();
-	mat4 modelViewMatrix = mat4::identity();
-	mat4 modelViewProjectionMatrix = mat4::identity();
+    mat4 modelMatrix = mat4(1.0);
+    mat4 viewMatrix = camera.getMatrix();
+    mat4 translationMatrix = mat4(1.0);
+    mat4 modelViewProjectionMatrix = mat4(1.0);
 
-	translationMatrix = vmath::translate(0.0f, 0.0f, -4.0f);
-	modelViewMatrix = translationMatrix;
-	modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+    modelMatrix = translate(modelMatrix, vec3(0.0f, 0.0f, -6.0f));
+    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelMatrix * viewMatrix;
 
 	glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 
