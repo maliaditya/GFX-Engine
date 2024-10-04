@@ -1,12 +1,10 @@
 #include "mesh.h"
 
-// GLM Headers
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 #include "utils/Logger.h"
 #include "../../../utils/Time.h"
 #include "ImguiManager.h"
+#include "shader.h"
 
 class Plane : public Mesh
 {
@@ -20,13 +18,18 @@ public:
 	void init() override;
 	void bindAttributeLocationsAndLink(GLuint) override;
 	void render() override;
-	void renderGUI();
-	void uninitializer();
-	void update();
+	void renderGUI() override;
+	void uninitializer() override;
+	void update() override;
+	void setModelMatrix() override;
 	
-	Timer timer;
+	GLuint initializeShaders() override;
+	glm::mat4 getModelMatrix() const override;
+	GLuint getShaderProgramObject() const override;
 
 	// Uniforms
+	glm::mat4 modelMatrix;
+
 	GLuint uBigWavesElevation;
 	GLuint uBigWavesFrequency;
 	GLuint uTime;
@@ -39,7 +42,6 @@ public:
 	GLuint uSmallWavesFrequency;
 	GLuint uSmallWavesSpeed;
 	GLuint uSmallWavesIterations;
-
 	
 	GLfloat bigWavesElevation = 0.2;
 	GLfloat elapsedTime = 0;
@@ -65,12 +67,12 @@ private:
 	GLuint VBO_COLOR = 0;
 	GLuint EBO = 0;
 
-	//uniforms
+	Timer timer;
 
 	void generatePlane();
 	void generateIndices();
 	void generateBuffers();
-	void uniforms();
+	void setUniforms();
 
 	std::vector<GLfloat> positions;
 	std::vector<GLfloat> colors;

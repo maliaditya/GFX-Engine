@@ -30,11 +30,12 @@ GLuint modelMatrixUniform;
 GLuint viewMatrixUniform;
 GLuint projectionMatrixUniform;
 glm::mat4 perspectiveProjectionMatrix;
-ImguiManager* imguiManager = nullptr;
 
 //HGLRC ghrc;
 HWND ghwnd;
 Camera* camera;
+Mesh* meshPointer = nullptr;
+ImguiManager* imguiManager = nullptr;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow) {
     // Create the window
@@ -43,7 +44,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     ghwnd = myWindow.hwnd;
     ghdc = myWindow.hdc;
     camera = &myWindow.camera;
-    Logger log("Main.log");
 
     int initialize();
     void resize(int, int);
@@ -60,6 +60,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     myWindow.eventEmitter.on("uninitialize", [&]() { uninitialize(); });
     myWindow.eventEmitter.on("resize", [&]() { resize(myWindow.width, myWindow.height); });
     
+    meshPointer = new Plane(10, 10, 500, 500);
+
     initialize();
 
     // Show the window
@@ -77,25 +79,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     return 0;
 }
 
-Plane plane(10,10,500, 500);
-
 int initialize() 
 {
 	void uninitialize();
 	void resize(int, int);
 
-	Logger iniLog("initialize.log");
-	Shader shader;
-	
-	shader.initialize(&plane, plane.localShaderPaths);
-	shaderProgramObject = shader.getShaderProgram("plane");
-    plane.init();
+    if (meshPointer) {
+        shaderProgramObject = meshPointer->initializeShaders();
+        
+        // Posted Linked Retrieving /Getting uniform location  from the shader program object.
+        modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_modelMatrix");
+        viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_viewMatrix");
+        projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_projectionMatrix");
 
-    // Posted Linked Retrieving /Getting uniform location  from the shader program object.
-    modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_modelMatrix");
-    viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_viewMatrix");
-    projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_projectionMatrix");
-
+    }
+    
     // Depth related Changes
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -111,6 +109,49 @@ int initialize()
     return(0);
 }
 
+void render()
+{
+    // Code
+    void resize(int width, int height); 
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+    imguiManager->beginFrame();
+    
+    imguiManager->renderGUI(*meshPointer);
+
+    ImGui::SetNextWindowBgAlpha(0.0f);
+    ImGui::Begin("Scene");
+
+    ImVec2 availableSpace = ImGui::GetContentRegionAvail();
+    resize( availableSpace.x, availableSpace.y);
+
+    // Transformations
+    glm::mat4 modelMatrix = glm::mat4(1.0);
+    glm::mat4 viewMatrix = camera->getMatrix();
+    glm::mat4 translationMatrix = glm::mat4(1.0);
+    modelMatrix = meshPointer->getModelMatrix();
+
+
+	// Use The Shader Program Object
+	glUseProgram(meshPointer->getShaderProgramObject());
+
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
+
+    meshPointer->render();
+
+	// unuser the shader program object
+	glUseProgram(0);
+
+    // End Scene Window
+    ImGui::End();
+
+    imguiManager->endFrame();
+
+    SwapBuffers(ghdc);
+}
 
 void resize(int width, int height)
 {
@@ -120,68 +161,14 @@ void resize(int width, int height)
         height = 1;
 
     glViewport(0, 0, width, height);
-	perspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
-}
+    perspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 
-
-
-ImVec2 availableSpaceProperties;
-
-void render()
-{
-    // Code
-    Logger log("render.log");
-    
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-    imguiManager->beginFrame();
-    imguiManager->renderGUI(plane);
-
-    ImGui::SetNextWindowBgAlpha(0.0f);
-    ImGui::Begin("Scene");
-
-    ImVec2 availableSpace = ImGui::GetContentRegionAvail();
-
-    // Calculate half of available space for centering
-    float halfWidth = availableSpace.x / 2.0f;
-    float halfHeight = availableSpace.y / 2.0f;
-    
-    resize( availableSpace.x, availableSpace.y);
-    
-    //glViewport(availableSpaceProperties.x, 0, availableSpace.x, availableSpace.y);
-
-
-	// Use The Shader Program Object
-	glUseProgram(shaderProgramObject);
-
-    // Transformations
-    glm::mat4 modelMatrix = glm::mat4(1.0);
-    glm::mat4 viewMatrix = camera->getMatrix();
-    glm::mat4 translationMatrix = glm::mat4(1.0);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
-
-    plane.render();
-
-	// unuser the shader program object
-	glUseProgram(0);
-
-    // End Scene Window
-    ImGui::End();
-    imguiManager->endFrame();
-
-    SwapBuffers(ghdc);
 }
 
 void update()
 {
     // Code
-    plane.update();
+    meshPointer->update();
 }
 
 void uninitialize()

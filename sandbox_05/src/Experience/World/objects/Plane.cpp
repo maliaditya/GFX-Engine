@@ -13,6 +13,7 @@ Plane::Plane(unsigned int width, unsigned int height, unsigned int gridX, unsign
 	VBO_COLOR(0),
 	VBO_POSITION(0),
 	EBO(0),
+	modelMatrix(glm::mat4(1.0f)),
 	localShaderPaths(
 						{
 							{GL_VERTEX_SHADER, "src/shader/plane/plane.vert"},
@@ -21,7 +22,7 @@ Plane::Plane(unsigned int width, unsigned int height, unsigned int gridX, unsign
 					)
 {
 	// Code
-
+	setModelMatrix();
 }
 
 Plane::~Plane()
@@ -94,7 +95,8 @@ void Plane::generateIndices()
 void Plane::generateBuffers()
 {
 	// Code
-		// Generate and bind VAO
+	
+	// Generate and bind VAO
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
@@ -125,11 +127,32 @@ void Plane::generateBuffers()
 void Plane::init()
 {
 	// Code
+
 	generatePlane();
 	generateIndices();
 	generateBuffers();
 
 }
+
+void Plane::setModelMatrix()
+{
+	// Code
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+}
+
+glm::mat4 Plane::getModelMatrix() const {
+	return modelMatrix; // Return the model matrix
+}
+GLuint Plane::getShaderProgramObject() const {
+	return shaderProgramObject; // Return the model matrix
+}
+
+
+
 void Plane::bindAttributeLocationsAndLink(GLuint shaderProgramObject)
 {
 	// Code
@@ -154,8 +177,10 @@ void Plane::bindAttributeLocationsAndLink(GLuint shaderProgramObject)
 	uSmallWavesIterations = glGetUniformLocation(shaderProgramObject, "uSmallWavesIterations");
 }
 
-void Plane::uniforms()
+void Plane::setUniforms()
 {
+	// Code
+
 	glUniform1f(uTime, elapsedTime);
 	glUniform1f(uBigWavesElevation, bigWavesElevation);
 	glUniform1f(uBigWavesSpeed, bigWavesSpeed);
@@ -171,22 +196,38 @@ void Plane::uniforms()
 	
 }
 
-
 void Plane::render()
 {
 	// Code
 
-
-	uniforms();
+	setUniforms();
+	
 	glBindVertexArray(VAO);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Wireframe mode
+
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	
 	glBindVertexArray(0);
 
 }
+ GLuint Plane::initializeShaders() {
+
+	 // Code
+
+	Shader shader;
+
+	// Initialize shader with the paths from localShaderPaths
+
+	shader.initialize(this, localShaderPaths);
+	shaderProgramObject = shader.getShaderProgram("plane");
+	
+	return shaderProgramObject;
+}
+
 
 void Plane::renderGUI()
 {
+	// Code
+
 	// ImGui Frame preparation
 	ImGui::SetNextWindowBgAlpha(0.35f);
 	ImGui::DockSpaceOverViewport();
@@ -211,11 +252,13 @@ void Plane::renderGUI()
 	ImVec4 surfaceColorEdit = ImVec4(surfaceColor.r, surfaceColor.g, surfaceColor.b, 1.0f);
 
 	// Update colors when ImGui sliders are changed
-	if (ImGui::ColorEdit3("depthColor", (float*)&depthColorEdit)) {
+	if (ImGui::ColorEdit3("depthColor", (float*)&depthColorEdit)) 
+	{
 		depthColor = glm::vec3(depthColorEdit.x, depthColorEdit.y, depthColorEdit.z);  // Update class member
 	}
 
-	if (ImGui::ColorEdit3("surfaceColor", (float*)&surfaceColorEdit)) {
+	if (ImGui::ColorEdit3("surfaceColor", (float*)&surfaceColorEdit)) 
+	{
 		surfaceColor = glm::vec3(surfaceColorEdit.x, surfaceColorEdit.y, surfaceColorEdit.z);  // Update class member
 	}
 
@@ -223,12 +266,10 @@ void Plane::renderGUI()
 }
 void Plane::update()
 {
-	Logger log("UpdatePlane.log");
 	// Code
 	float deltaTime = timer.getElapsedTime();
 
 	elapsedTime += deltaTime;
-	log.debug("elapsedTime", elapsedTime);
 }
 
 void Plane::uninitializer()
@@ -245,13 +286,11 @@ void Plane::uninitializer()
 	{
 		glDeleteBuffers(1, &VBO_POSITION);
 		VBO_POSITION = NULL;
-
 	}
 	if (EBO)
 	{
 		glDeleteBuffers(1, &EBO);
 		EBO = NULL;
-
 	}
 	if (VAO)
 	{
