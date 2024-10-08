@@ -19,7 +19,7 @@
 #include "ImguiManager.h"
 
 // My header files
-#include "Experience/World/objects/plane.h"
+#include "Experience/World/objects/Model.h"
 
 // ************** OpenGL Headers already defined in Window.h *******************
 
@@ -60,7 +60,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     myWindow.eventEmitter.on("uninitialize", [&]() { uninitialize(); });
     myWindow.eventEmitter.on("resize", [&]() { resize(myWindow.width, myWindow.height); });
     
-    meshPointer = new Plane(10, 10, 500, 500);
+    //meshPointer = new Plane(10, 10, 500, 500);
+   // meshPointer = new Galaxy();
+      meshPointer = new Model();
 
     initialize();
 
@@ -85,14 +87,18 @@ int initialize()
 	void resize(int, int);
 
     if (meshPointer) {
-        shaderProgramObject = meshPointer->initializeShaders();
+        Logger log("initialize.log");
+         meshPointer->initializeShaders();
         
         // Posted Linked Retrieving /Getting uniform location  from the shader program object.
-        modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_modelMatrix");
-        viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_viewMatrix");
-        projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "u_projectionMatrix");
+        modelMatrixUniform = glGetUniformLocation(meshPointer->getShaderProgramObject(), "u_modelMatrix");
+        viewMatrixUniform = glGetUniformLocation(meshPointer->getShaderProgramObject(), "u_viewMatrix");
+        projectionMatrixUniform = glGetUniformLocation(meshPointer->getShaderProgramObject(), "u_projectionMatrix");
 
     }
+
+    // Points
+    glEnable(GL_PROGRAM_POINT_SIZE);
     
     // Depth related Changes
     glClearDepth(1.0f);
@@ -108,6 +114,8 @@ int initialize()
 
     return(0);
 }
+
+GLfloat angle = 0.0f;
 
 void render()
 {
@@ -127,16 +135,13 @@ void render()
     resize( availableSpace.x, availableSpace.y);
 
     // Transformations
-    glm::mat4 modelMatrix = glm::mat4(1.0);
     glm::mat4 viewMatrix = camera->getMatrix();
     glm::mat4 translationMatrix = glm::mat4(1.0);
-    modelMatrix = meshPointer->getModelMatrix();
-
-
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 	// Use The Shader Program Object
 	glUseProgram(meshPointer->getShaderProgramObject());
 
-    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(meshPointer->getModelMatrix()));
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
@@ -151,6 +156,7 @@ void render()
     imguiManager->endFrame();
 
     SwapBuffers(ghdc);
+
 }
 
 void resize(int width, int height)
@@ -168,6 +174,7 @@ void resize(int width, int height)
 void update()
 {
     // Code
+    angle += 0.01;
     meshPointer->update();
 }
 

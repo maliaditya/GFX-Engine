@@ -27,13 +27,13 @@ set OBJ_DIR=build\obj
 set EXE_DIR=build
 
 :: Compile source files
-cl.exe /c /EHsc /I %ENGINE_DIR% /I %OPENGLDIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %VENDOR_LIBS%\imgui\*.cpp  %OPENGLDIR%\*.cpp   %SRC_DIR%\Experience\World\objects\*.cpp  %WINDOWDIR%\window.cpp   /Fo%OBJ_DIR%\
+cl.exe /c /EHsc /I %ENGINE_DIR% /I %OPENGLDIR% /I %WINDOWDIR% /I %VENDOR_LIBS% /I %VENDOR_LIBS%\glew\include %SRC_DIR%\main.cpp %VENDOR_LIBS%\imgui\*.cpp  %OPENGLDIR%\*.cpp   %SRC_DIR%\Experience\World\objects\*.cpp  %WINDOWDIR%\window.cpp /I C:\OpenGL\assimp\include   /Fo%OBJ_DIR%\
 
 :: Create resource file
 rc.exe %WINDOWDIR%\Window.rc
 
 :: Link object files and create executable
-link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%VENDOR_LIBS%\glew\lib\Release\x64" user32.lib gdi32.lib /subsystem:windows  /OUT:%EXE_DIR%\main.exe
+link.exe %OBJ_DIR%\*.obj %WINDOWDIR%\Window.res "/LIBPATH:%VENDOR_LIBS%\glew\lib\Release\x64" user32.lib gdi32.lib /LIBPATH:C:\OpenGL\assimp\lib assimp-vc143-mtd.lib /subsystem:windows  /OUT:%EXE_DIR%\main.exe
 
 :: Clean up
 if exist main.exe (
@@ -42,3 +42,5 @@ if exist main.exe (
 )
 
 echo Build completed successfully!
+
+build\main.exe

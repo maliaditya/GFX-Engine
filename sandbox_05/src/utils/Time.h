@@ -14,7 +14,9 @@ public:
         lastTime = currentTime; // Update lastTime for the next frame
         return elapsed.count(); // Return elapsed time in seconds
     }
-
+    void reset() {
+        lastTime = Clock::now(); // Reset the time to the current time
+    }
 private:
     TimePoint lastTime; // Store the last time point
 };
